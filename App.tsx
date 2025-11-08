@@ -97,7 +97,7 @@ const App = () => {
       <main className="container mx-auto px-4 py-8 md:py-12">
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-extrabold text-gray-800">
-            <span className="text-green-600">Fast & Easy</span> Salary Advance
+            <span className="text-green-600">Ka Bwangu Bwangu</span> Salary Advance
           </h1>
           <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
             Get the cash you need, when you need it. Quick approval, transparent fees. Your financial partner is here.

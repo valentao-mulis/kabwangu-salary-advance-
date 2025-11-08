@@ -2,7 +2,7 @@ import React from 'react';
 
 const ContactButtons = () => {
   return (
-    <section className="my-16 p-6 md:p-8 bg-white rounded-2xl shadow-lg text-center">
+    <section id="contact-us" className="my-16 p-6 md:p-8 bg-white rounded-2xl shadow-lg text-center">
       <h2 className="text-2xl font-bold text-gray-800 mb-4">Have Questions? Contact Us Directly!</h2>
       <div className="flex flex-col sm:flex-row justify-center gap-4 mt-6">
         <a 

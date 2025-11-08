@@ -20,7 +20,7 @@ const Footer = ({ onAdminToggle }: FooterProps) => {
     <footer className="bg-gray-800 text-white mt-16">
       <div className="container mx-auto px-4 py-6 text-center">
         <p onClick={handleCopyrightClick} className="cursor-pointer">
-          &copy; {new Date().getFullYear()} Xtenda Salary Advance. All Rights Reserved.
+          &copy; 2025 Xtenda Salary Advance with Mr Mulisha. All rights reserved.
         </p>
       </div>
     </footer>

@@ -84,7 +84,8 @@ const AdminChatbot = ({ applicationData }: AdminChatbotProps) => {
     e.preventDefault();
     if (!userInput.trim() || isLoading) return;
 
-    const newMessages = [...messages, { sender: 'user', text: userInput }];
+    // Explicitly type newMessages to match ChatMessage[]
+    const newMessages: ChatMessage[] = [...messages, { sender: 'user', text: userInput }];
     setMessages(newMessages);
     const currentUserInput = userInput;
     setUserInput('');

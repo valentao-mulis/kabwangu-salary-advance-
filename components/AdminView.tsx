@@ -281,8 +281,8 @@ const AdminView = ({ data, onBack }: AdminViewProps) => {
               <div className="mt-4">{editableData.selfie ? <div className="border rounded-lg p-2 inline-block bg-gray-50 shadow-inner"><img src={editableData.selfie} alt="Client Selfie" className="max-w-sm w-full" /></div> : <p className="text-gray-500">No selfie was provided.</p>}</div>
             </section>
             <section>
-              <h2 className="text-lg font-semibold text-gray-800 border-b pb-2 mb-4">NCD Verification Document</h2>
-              <div className="mt-4">{editableData.ncdVerification ? <a href={editableData.ncdVerification} download={`NCD_Verification_${editableData.fullNames?.replace(/\s/g, '_') || 'applicant'}.pdf`} className="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300 flex items-center gap-2 w-max"><i className="fa-solid fa-file-pdf"></i>Download PDF</a> : <p className="text-gray-500">No NCD Verification document was uploaded.</p>}</div>
+              <h2 className="text-lg font-semibold text-gray-800 border-b pb-2 mb-4">Latest Payslip</h2>
+              <div className="mt-4">{editableData.latestPayslip ? <a href={editableData.latestPayslip} download={`Latest_Payslip_${editableData.fullNames?.replace(/\s/g, '_') || 'applicant'}.pdf`} className="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300 flex items-center gap-2 w-max"><i className="fa-solid fa-file-pdf"></i>Download PDF</a> : <p className="text-gray-500">No Payslip was uploaded.</p>}</div>
             </section>
             <section>
               <h2 className="text-lg font-semibold text-gray-800 border-b pb-2 mb-4">Next of Kin Details</h2>
@@ -300,7 +300,6 @@ const AdminView = ({ data, onBack }: AdminViewProps) => {
                   {renderField("Bank Name", "bankName")}
                   {renderField("Branch Name", "branchName")}
                   {renderField("Account Number", "accountNumber")}
-                  {renderField("Account Names", "accountNames")}
               </dl>
             </section>
             <section>

@@ -16,7 +16,7 @@ export interface ApplicationFormData {
   employmentAddress: string;
   employmentTerms: string;
   selfie: string | null;
-  ncdVerification: string | ArrayBuffer | null;
+  latestPayslip: string | ArrayBuffer | null;
   kinFullNames: string;
   kinNrc: string;
   kinRelationship: string;
@@ -25,7 +25,6 @@ export interface ApplicationFormData {
   bankName: string;
   branchName: string;
   accountNumber: string;
-  accountNames: string;
   declarationAgreed: boolean;
   signature: string;
 }

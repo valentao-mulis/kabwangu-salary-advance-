@@ -42,10 +42,10 @@ const ApplicationForm = () => {
   const initialFormData: ApplicationFormData = {
     dateOfApplication: new Date().toISOString().split('T')[0],
     fullNames: '', nrc: '', employeeNumber: '', employer: '', phone: '', email: '',
-    employmentAddress: '', employmentTerms: '', selfie: '', ncdVerification: '',
+    employmentAddress: '', employmentTerms: '', selfie: '', latestPayslip: '',
     kinFullNames: '', kinNrc: '', kinRelationship: '', kinPhone: '', kinResidentialAddress: '',
-    bankName: '', branchName: '', accountNumber: '', accountNames: '',
-    declarationAgreed: false, signature: '',
+    bankName: '', branchName: '', accountNumber: '',
+    declarationAgreed: true, signature: '',
   };
 
   const [formData, setFormData] = React.useState<any>(initialFormData);
@@ -68,11 +68,11 @@ const ApplicationForm = () => {
         const reader = new FileReader();
         reader.onload = (e) => {
             const base64 = e.target?.result;
-            setFormData((prev: any) => ({ ...prev, ncdVerification: base64 }));
+            setFormData((prev: any) => ({ ...prev, latestPayslip: base64 }));
         };
         reader.readAsDataURL(file);
     } else {
-        setFormData((prev: any) => ({ ...prev, ncdVerification: '' }));
+        setFormData((prev: any) => ({ ...prev, latestPayslip: '' }));
     }
   };
 
@@ -167,8 +167,9 @@ const ApplicationForm = () => {
               </dl>
             </div>
              <div className="p-4 border rounded-lg">
-              <h3 className="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">NCD Verification Document</h3>
-               <p className="text-sm text-gray-600">Document Status: <span className="font-bold">{formData.ncdVerification ? 'Uploaded' : 'Not Uploaded'}</span></p>
+              <h3 className="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Latest Payslip</h3>
+               <p className="text-sm text-gray-600">Document Status: <span className="font-bold">{formData.latestPayslip ? 'Uploaded' : 'Not Uploaded'}</span></p>
+               {!formData.latestPayslip && <p className="text-red-500 font-bold text-sm mt-1">Payslip is required.</p>}
             </div>
             <div className="p-4 border rounded-lg">
               <h3 className="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">A Picture of Yourself</h3>
@@ -190,7 +191,6 @@ const ApplicationForm = () => {
                 {renderField('Bank Name', formData.bankName)}
                 {renderField('Branch Name', formData.branchName)}
                 {renderField('Account Number', formData.accountNumber)}
-                {renderField('Account Names', formData.accountNames)}
               </dl>
             </div>
             <div className="p-4 border rounded-lg">
@@ -200,7 +200,7 @@ const ApplicationForm = () => {
             </div>
             <div className="mt-10 flex flex-col md:flex-row justify-center gap-4">
                 <button onClick={() => setIsPreviewing(false)} className="w-full md:w-auto bg-gray-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-gray-700 transition duration-300 text-lg flex items-center justify-center gap-2 order-2 md:order-1"><i className="fa-solid fa-pen-to-square"></i>Edit Details</button>
-                <button onClick={handleSubmit} disabled={!formData.signature || !formData.selfie} className="w-full md:w-auto bg-green-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-green-700 transition duration-300 text-lg flex items-center justify-center gap-2 order-1 md:order-2 disabled:bg-gray-400 disabled:cursor-not-allowed"><i className="fa-solid fa-check"></i>Confirm & Submit</button>
+                <button onClick={handleSubmit} disabled={!formData.signature || !formData.selfie || !formData.latestPayslip} className="w-full md:w-auto bg-green-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-green-700 transition duration-300 text-lg flex items-center justify-center gap-2 order-1 md:order-2 disabled:bg-gray-400 disabled:cursor-not-allowed"><i className="fa-solid fa-check"></i>Confirm & Submit</button>
             </div>
         </div>
       </section>
@@ -239,11 +239,11 @@ const ApplicationForm = () => {
             </div>
         </details>
         
-        <details className="space-y-4 p-4 border rounded-lg">
-            <summary className="text-xl font-semibold text-gray-700 cursor-pointer">NCD Verification (Optional)</summary>
+        <details open className="space-y-4 p-4 border rounded-lg">
+            <summary className="text-xl font-semibold text-gray-700 cursor-pointer">Latest Payslip (Mandatory)</summary>
             <div className="pt-4">
-                <FileUpload label="Upload NCD Verification Document" fileType="application/pdf" onFileSelect={handleFileChange} />
-                <p className="text-xs text-gray-500 mt-1">Please upload the PDF document for your NCD verification if available.</p>
+                <FileUpload label="Upload Latest Payslip" fileType="application/pdf" onFileSelect={handleFileChange} />
+                <p className="text-xs text-gray-500 mt-1">Please upload your latest payslip in PDF format.</p>
             </div>
         </details>
 
@@ -270,8 +270,9 @@ const ApplicationForm = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
                 <FormInput label="Bank Name" name="bankName" formData={formData} handleInputChange={handleInputChange}/>
                 <FormInput label="Branch Name" name="branchName" formData={formData} handleInputChange={handleInputChange}/>
-                <FormInput label="Account Number" name="accountNumber" formData={formData} handleInputChange={handleInputChange}/>
-                <FormInput label="Account Names" name="accountNames" formData={formData} handleInputChange={handleInputChange}/>
+                <div className="md:col-span-2">
+                    <FormInput label="Account Number" name="accountNumber" formData={formData} handleInputChange={handleInputChange}/>
+                </div>
             </div>
         </details>
 
