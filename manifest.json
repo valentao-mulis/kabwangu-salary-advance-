@@ -1,0 +1,27 @@
+{
+  "name": "Xtenda Salary Advance",
+  "short_name": "Xtenda Advance",
+  "description": "Get fast and easy salary advances. Calculate your loan and apply in minutes.",
+  "id": "/?source=pwa",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f0fff4",
+  "theme_color": "#16a34a",
+  "categories": ["finance", "productivity", "business"],
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ]
+}
