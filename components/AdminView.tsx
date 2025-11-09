@@ -274,6 +274,7 @@ const AdminView = ({ data, onBack }: AdminViewProps) => {
                   {renderField("Email", "email", "email")}
                   {renderField("Employment Address", "employmentAddress")}
                   {renderField("Employment Terms", "employmentTerms", "radio")}
+                  {renderField("Loan Purpose", "loanPurpose")}
               </dl>
             </section>
             <section>

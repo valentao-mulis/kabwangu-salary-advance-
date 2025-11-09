@@ -7,6 +7,7 @@ interface SignaturePadProps {
 const SignaturePad = ({ onSignatureChange }: SignaturePadProps) => {
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const isDrawing = React.useRef(false);
+  const [isSigned, setIsSigned] = React.useState(false);
 
   const getCanvasContext = React.useCallback(() => {
     const canvas = canvasRef.current;
@@ -20,6 +21,7 @@ const SignaturePad = ({ onSignatureChange }: SignaturePadProps) => {
     if (ctx && canvas) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       onSignatureChange('');
+      setIsSigned(false);
     }
   }, [getCanvasContext, onSignatureChange]);
 
@@ -35,8 +37,10 @@ const SignaturePad = ({ onSignatureChange }: SignaturePadProps) => {
             const isEmpty = !pixelBuffer.some(color => color !== 0);
             if (!isEmpty) {
                  onSignatureChange(canvas.toDataURL('image/png'));
+                 setIsSigned(true);
             } else {
                  onSignatureChange('');
+                 setIsSigned(false);
             }
         }
     }
@@ -120,15 +124,22 @@ const SignaturePad = ({ onSignatureChange }: SignaturePadProps) => {
     <div className="relative w-full">
       <canvas
         ref={canvasRef}
-        className="w-full h-[200px] bg-gray-100 border border-gray-300 rounded-lg cursor-crosshair touch-none"
+        className={`w-full h-[200px] rounded-lg cursor-crosshair touch-none transition-all duration-300 border-2 ${isSigned ? 'bg-green-50 border-green-500' : 'bg-gray-50 border-gray-300 border-dashed'}`}
       />
+      
+      {/* Status Badge */}
+      <div className={`absolute top-3 left-3 flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold transition-all duration-300 ${isSigned ? 'bg-green-500 text-white opacity-100' : 'opacity-0'}`}>
+          <i className="fa-solid fa-check-circle"></i> Signed
+      </div>
+
+      {/* Clear Button */}
       <button
         type="button"
         onClick={clearCanvas}
-        className="absolute top-2 right-2 bg-gray-600 text-white text-xs font-bold py-1 px-3 rounded-md hover:bg-gray-700 transition"
+        className={`absolute top-3 right-3 text-xs font-bold py-1.5 px-3 rounded-md transition duration-200 shadow-sm flex items-center gap-1 ${isSigned ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
         aria-label="Clear Signature"
       >
-        <i className="fa-solid fa-eraser mr-1"></i> Clear
+        <i className="fa-solid fa-eraser"></i> Clear
       </button>
     </div>
   );

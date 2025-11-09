@@ -15,6 +15,7 @@ export interface ApplicationFormData {
   email: string;
   employmentAddress: string;
   employmentTerms: string;
+  loanPurpose?: string;
   selfie: string | null;
   latestPayslip: string | ArrayBuffer | null;
   kinFullNames: string;

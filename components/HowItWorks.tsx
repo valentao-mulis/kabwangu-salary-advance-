@@ -1,19 +1,17 @@
 import React from 'react';
 
-const HowItWorks = () => {
-  const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-        // Account for sticky header
-        const headerOffset = 130;
-        const elementPosition = element.getBoundingClientRect().top;
-        const offsetPosition = elementPosition + window.scrollY - headerOffset;
+interface HowItWorksProps {
+    onNavigate: (page: 'home' | 'apply' | 'contact') => void;
+}
+
+const HowItWorks = ({ onNavigate }: HowItWorksProps) => {
   
-        window.scrollTo({
-          top: offsetPosition,
-          behavior: "smooth"
-        });
-    }
+  const handleStep1Click = () => {
+      // Stay on home page, just scroll to calculator
+      onNavigate('home');
+      setTimeout(() => {
+          document.getElementById('calculator')?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
   };
 
   return (
@@ -23,47 +21,71 @@ const HowItWorks = () => {
         
         {/* Step 1 */}
         <div 
-            onClick={() => scrollToSection('calculator')}
-            className="bg-white rounded-lg shadow-lg p-6 text-center flex flex-col items-center justify-start transform hover:scale-105 transition-all duration-300 cursor-pointer"
+            onClick={handleStep1Click}
+            className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col transform hover:scale-105 transition-all duration-300 cursor-pointer group"
             role="button"
             tabIndex={0}
             aria-label="Go to calculator"
         >
-          <div className="bg-orange-100 p-4 rounded-full mb-4">
-            <i className="fa-solid fa-calculator text-3xl text-orange-500"></i>
+          <div className="h-48 overflow-hidden relative bg-orange-100 flex items-center justify-center">
+             <img 
+                src="https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=800&q=80" 
+                alt="Calculator and financial planning" 
+                className="w-full h-full object-cover relative z-10 group-hover:opacity-90 transition-opacity"
+                loading="lazy"
+             />
           </div>
-          <h3 className="text-xl font-bold text-gray-800 mb-2">1. Our Rates</h3>
-          <p className="text-gray-600">Use our easy calculator to see exactly how much you can borrow and what your repayments will be. No hidden fees.</p>
+          <div className="p-6 flex flex-col flex-grow text-center">
+            <div className="bg-orange-500 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-xl mx-auto mb-4 shadow-md">1</div>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">Our Rates</h3>
+            <p className="text-gray-600">Use our easy calculator to see exactly how much you can borrow and what your repayments will be. No hidden fees.</p>
+          </div>
         </div>
 
         {/* Step 2 */}
         <div 
-            onClick={() => scrollToSection('application-form')}
-            className="bg-white rounded-lg shadow-lg p-6 text-center flex flex-col items-center justify-start transform hover:scale-105 transition-all duration-300 cursor-pointer"
+            onClick={() => onNavigate('apply')}
+            className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col transform hover:scale-105 transition-all duration-300 cursor-pointer group"
             role="button"
             tabIndex={0}
-            aria-label="Go to application form"
+            aria-label="Go to application form page"
         >
-          <div className="bg-green-100 p-4 rounded-full mb-4">
-            <i className="fa-solid fa-file-pen text-3xl text-green-600"></i>
+          <div className="h-48 overflow-hidden relative bg-green-100 flex items-center justify-center">
+             <img 
+                src="https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=800&q=80" 
+                alt="Signing documents digitally" 
+                className="w-full h-full object-cover relative z-10 group-hover:opacity-90 transition-opacity"
+                loading="lazy"
+             />
           </div>
-          <h3 className="text-xl font-bold text-gray-800 mb-2">2. Online Application</h3>
-          <p className="text-gray-600">Complete our simple online application form. Upload a quick selfie and sign digitally. It only takes a few minutes.</p>
+          <div className="p-6 flex flex-col flex-grow text-center">
+            <div className="bg-green-600 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-xl mx-auto mb-4 shadow-md">2</div>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">Online Application</h3>
+            <p className="text-gray-600">Complete our simple online application form. Upload a quick selfie and sign digitally. It only takes a few minutes.</p>
+          </div>
         </div>
 
         {/* Step 3 */}
         <div 
-            onClick={() => scrollToSection('contact-us')}
-            className="bg-white rounded-lg shadow-lg p-6 text-center flex flex-col items-center justify-start transform hover:scale-105 transition-all duration-300 cursor-pointer"
+            onClick={() => onNavigate('contact')}
+            className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col transform hover:scale-105 transition-all duration-300 cursor-pointer group"
             role="button"
             tabIndex={0}
-            aria-label="Go to contact section"
+            aria-label="Go to contact page"
         >
-          <div className="bg-blue-100 p-4 rounded-full mb-4">
-            <i className="fa-solid fa-hand-holding-dollar text-3xl text-blue-600"></i>
+          <div className="h-48 overflow-hidden relative bg-blue-100 flex items-center justify-center">
+             <img 
+                src="https://images.unsplash.com/photo-1621981386829-9b7476c4bf41?auto=format&fit=crop&w=800&q=80" 
+                alt="Receiving cash" 
+                className="w-full h-full object-cover relative z-10 group-hover:opacity-90 transition-opacity"
+                loading="lazy"
+             />
           </div>
-          <h3 className="text-xl font-bold text-gray-800 mb-2">3. Receive Your Cash</h3>
-          <p className="text-gray-600">Once approved, your salary advance is disbursed directly to your bank/mobile money account instantly.</p>
+          <div className="p-6 flex flex-col flex-grow text-center">
+            <div className="bg-blue-600 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-xl mx-auto mb-4 shadow-md">3</div>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">Receive Your Cash</h3>
+            <p className="text-gray-600">Once approved, your salary advance is disbursed directly to your bank or mobile money account instantly.</p>
+          </div>
         </div>
 
       </div>
