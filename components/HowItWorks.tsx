@@ -37,8 +37,8 @@ const HowItWorks = ({ onNavigate }: HowItWorksProps) => {
           </div>
           <div className="p-6 flex flex-col flex-grow text-center">
             <div className="bg-orange-500 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-xl mx-auto mb-4 shadow-md">1</div>
-            <h3 className="text-xl font-bold text-gray-800 mb-2">Our Rates</h3>
-            <p className="text-gray-600">Use our easy calculator to see exactly how much you can borrow and what your repayments will be. No hidden fees.</p>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">OUR LOAN STRUCTURE</h3>
+            <p className="text-gray-600">your take home should be the exact amount you apply for, no arrangement fees.</p>
           </div>
         </div>
 
@@ -75,16 +75,16 @@ const HowItWorks = ({ onNavigate }: HowItWorksProps) => {
         >
           <div className="h-48 overflow-hidden relative bg-blue-100 flex items-center justify-center">
              <img 
-                src="https://images.unsplash.com/photo-1621981386829-9b7476c4bf41?auto=format&fit=crop&w=800&q=80" 
-                alt="Receiving cash" 
+                src="https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?auto=format&fit=crop&w=800&q=80" 
+                alt="A happy family in their new home" 
                 className="w-full h-full object-cover relative z-10 group-hover:opacity-90 transition-opacity"
                 loading="lazy"
              />
           </div>
           <div className="p-6 flex flex-col flex-grow text-center">
             <div className="bg-blue-600 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-xl mx-auto mb-4 shadow-md">3</div>
-            <h3 className="text-xl font-bold text-gray-800 mb-2">Receive Your Cash</h3>
-            <p className="text-gray-600">Once approved, your salary advance is disbursed directly to your bank or mobile money account instantly.</p>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">Bwangu Instant Pay</h3>
+            <p className="text-gray-600">Once approved, your cash is disbursed to your personal salary account instantly.</p>
           </div>
         </div>
 

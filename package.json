@@ -1,5 +1,5 @@
 {
-  "name": "ka-bwangu-xtenda-salary-advance",
+  "name": "ka-bwangu-bwangu-salary-advance",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -10,7 +10,10 @@
   },
   "dependencies": {
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "@google/genai": "latest",
+    "@emailjs/browser": "3.11.0",
+    "react-dom": "^19.2.0",
+    "firebase": "^12.6.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

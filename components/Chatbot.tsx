@@ -1,5 +1,5 @@
 import React from 'react';
-import { GoogleGenerativeAI } from "https://cdn.jsdelivr.net/npm/@google/generative-ai/+esm";
+import { GoogleGenAI, Chat } from "@google/genai";
 import { ScheduleEntry, ChatMessage } from '../types';
 
 interface ChatbotProps {
@@ -7,7 +7,7 @@ interface ChatbotProps {
 }
 
 // Increment this version to force clear all user chat histories on the next load
-const CHAT_VERSION = '1.1';
+const CHAT_VERSION = '1.2';
 
 const Chatbot = ({ schedule }: ChatbotProps) => {
   const [isOpen, setIsOpen] = React.useState(false);
@@ -16,9 +16,53 @@ const Chatbot = ({ schedule }: ChatbotProps) => {
   const [userInput, setUserInput] = React.useState('');
   const [previousSession, setPreviousSession] = React.useState<ChatMessage[] | null>(null);
   const chatContainerRef = React.useRef<HTMLDivElement>(null);
+  const chatRef = React.useRef<Chat | null>(null);
+
+  const getSystemInstruction = React.useCallback(() => {
+    const scheduleSummary = schedule
+      .filter(s => [1000, 2000, 3000, 5000, 10000].includes(s.disbursedAmount)) // Take a sample
+      .map(s => ` - Amount: K${s.disbursedAmount}, 3-month repayment: K${s.installments[3]}/mo, 6-month repayment: K${s.installments[6]}/mo`)
+      .join('\n');
+
+    return `You are a friendly and helpful AI assistant for ka bwangu bwangu. Your goal is to answer user questions about our services based only on the information provided.
+      - Be concise, professional, and clear.
+      - You can answer questions about loan amounts, repayment periods (1 to 6 months), and monthly installments.
+      - If you don't know an answer, politely say so and suggest the user visits the 'Contact Us' page.
+      - Do NOT ask for any personal information (NRC, phone number, etc.).
+      - Do NOT make up information or promise loan approval.
+      - Here is a sample of our repayment schedule to help you answer questions. You can interpolate for amounts not listed.
+      Repayment Schedule Sample:
+      ${scheduleSummary}
+      - For amounts between the samples, you can estimate the repayment. For example, for K1200, the repayment will be a bit more than the one for K1000.
+      - Our loan range is from K500 to K10,000.
+      `;
+  }, [schedule]);
+
+  const initChat = React.useCallback(() => {
+    try {
+      if (!process.env.API_KEY) {
+          console.error("API_KEY is not set.");
+          return;
+      }
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      chatRef.current = ai.chats.create({
+        model: 'gemini-2.5-flash',
+        config: {
+          systemInstruction: getSystemInstruction(),
+        },
+      });
+    } catch (e) {
+      console.error("Failed to initialize AI:", e);
+      setMessages(prev => [...prev, { sender: 'ai', text: "Sorry, the AI chat is currently unavailable." }]);
+    }
+  }, [getSystemInstruction]);
 
   React.useEffect(() => {
     if (isOpen) {
+      if (!chatRef.current) {
+          initChat();
+      }
+
       try {
         const savedHistory = localStorage.getItem('userChatHistory');
         if (savedHistory) {
@@ -27,16 +71,14 @@ const Chatbot = ({ schedule }: ChatbotProps) => {
           const now = new Date();
           const hoursDiff = (now.getTime() - savedDate.getTime()) / (1000 * 60 * 60);
 
-          // Load only if version matches AND it's less than 24 hours old
-          if (version === CHAT_VERSION && hoursDiff < 24 && savedMessages.length > 0) {
-            // If it's a very short recent session, just load it immediately
+          // Keep history for 144 hours (6 days) if version matches
+          if (version === CHAT_VERSION && hoursDiff < 144 && savedMessages.length > 0) {
             if (savedMessages.length <= 2) {
                  setMessages(savedMessages);
             } else {
                  setPreviousSession(savedMessages);
             }
           } else {
-            // Expired or old version
             localStorage.removeItem('userChatHistory');
           }
         }
@@ -46,10 +88,10 @@ const Chatbot = ({ schedule }: ChatbotProps) => {
       }
 
       if (messages.length === 0 && !previousSession) {
-        setMessages([{ sender: 'ai', text: "Hello! I'm the Xtenda AI Assistant. How can I help you with your salary advance questions today?" }]);
+        setMessages([{ sender: 'ai', text: "Hello! I'm the ka bwangu bwangu AI Assistant. How can I help you with your salary advance questions today?" }]);
       }
     }
-  }, [isOpen]);
+  }, [isOpen, initChat]);
 
   React.useEffect(() => {
     if (messages.length > 0) {
@@ -83,6 +125,8 @@ const Chatbot = ({ schedule }: ChatbotProps) => {
           setMessages([{ sender: 'ai', text: "Chat history cleared. How can I help you?" }]);
           setPreviousSession(null);
           setIsLoading(false);
+          // Re-initialize chat with fresh history
+          initChat();
       }
   };
 
@@ -90,29 +134,25 @@ const Chatbot = ({ schedule }: ChatbotProps) => {
     e.preventDefault();
     if (!userInput.trim() || isLoading) return;
 
-    // Explicitly type newMessages to match ChatMessage[]
+    if (!chatRef.current) {
+        setMessages(prev => [...prev, { sender: 'ai', text: "Sorry, I'm having trouble connecting right now. Please try again later or visit our 'Contact Us' page." }]);
+        return;
+    }
+
     const newMessages: ChatMessage[] = [...messages, { sender: 'user', text: userInput }];
     setMessages(newMessages);
-    const currentUserInput = userInput;
+    const textToSend = userInput;
     setUserInput('');
     setIsLoading(true);
-    setPreviousSession(null); // Hide load button on new message
+    setPreviousSession(null);
 
     try {
-        const ai = new GoogleGenerativeAI({apiKey: process.env.API_KEY});
-        const scheduleString = JSON.stringify(schedule, null, 2);
-        const systemInstruction = `You are a helpful and friendly AI assistant for Xtenda Salary Advance, a company that provides salary-based loans in Zambia. Your currency is Zambian Kwacha (ZMW), use 'K' as a prefix for currency amounts (e.g., K500). Your goal is to answer customer questions accurately based on the provided JSON loan schedule data. The schedule shows disbursed amounts and the corresponding monthly installment for different repayment periods (in months). Do not make up information. If a question is outside the scope of Xtenda's loan products, politely decline to answer. Be concise. Here is the loan repayment schedule: ${scheduleString}`;
-        
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: currentUserInput,
-            config: { systemInstruction }
-        });
-
+        const response = await chatRef.current.sendMessage({ message: textToSend });
         const aiText = response.text;
+        
         setMessages(prev => [...prev, { sender: 'ai', text: aiText }]);
     } catch (error) {
-        console.error("Error calling Gemini API:", error);
+        console.error("Chatbot error:", error);
         setMessages(prev => [...prev, { sender: 'ai', text: "Sorry, I'm having trouble connecting right now. Please try again later." }]);
     } finally {
         setIsLoading(false);
@@ -132,7 +172,7 @@ const Chatbot = ({ schedule }: ChatbotProps) => {
       {isOpen && (
         <div className="fixed bottom-24 right-6 w-full max-w-sm h-[60vh] bg-white rounded-2xl shadow-xl flex flex-col z-[100] border border-gray-200 animate-slide-up sm:max-w-md sm:h-[70vh]">
           <header className="bg-green-600 text-white p-4 rounded-t-2xl flex justify-between items-center">
-            <h3 className="font-bold text-lg">Xtenda AI Assistant</h3>
+            <h3 className="font-bold text-lg">ka bwangu bwangu AI Assistant</h3>
             <div className="flex items-center gap-4">
                 <button 
                     onClick={handleClearChat} 

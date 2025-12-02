@@ -1,9 +1,9 @@
 import React from 'react';
-import { GoogleGenerativeAI } from "https://cdn.jsdelivr.net/npm/@google/generative-ai/+esm";
-import { ChatMessage } from '../types';
+import { GoogleGenAI } from "@google/genai";
+import { ChatMessage, ApplicationFormData } from '../types';
 
 interface AdminChatbotProps {
-    applicationData: any;
+    applicationData: ApplicationFormData;
 }
 
 // Increment this version to force clear all admin chat histories
@@ -17,6 +17,20 @@ const AdminChatbot = ({ applicationData }: AdminChatbotProps) => {
   const [previousSession, setPreviousSession] = React.useState<ChatMessage[] | null>(null);
   const chatContainerRef = React.useRef<HTMLDivElement>(null);
 
+  // Safe stringify helper to handle circular references
+  const safeStringify = (obj: any) => {
+    const cache = new Set();
+    return JSON.stringify(obj, (key, value) => {
+        if (typeof value === 'object' && value !== null) {
+            if (cache.has(value)) {
+                return; // Duplicate reference found, discard key
+            }
+            cache.add(value);
+        }
+        return value;
+    });
+  };
+
   React.useEffect(() => {
     if (isOpen) {
       try {
@@ -27,7 +41,6 @@ const AdminChatbot = ({ applicationData }: AdminChatbotProps) => {
           const now = new Date();
           const hoursDiff = (now.getTime() - savedDate.getTime()) / (1000 * 60 * 60);
 
-          // Load only if version matches AND it's less than 24 hours old
           if (version === ADMIN_CHAT_VERSION && hoursDiff < 24 && savedMessages.length > 0) {
              setPreviousSession(savedMessages);
           } else {
@@ -40,7 +53,7 @@ const AdminChatbot = ({ applicationData }: AdminChatbotProps) => {
       }
 
       if (messages.length === 0 && !previousSession) {
-        setMessages([{ sender: 'ai', text: "Hello! I'm your Admin Assistant. How can I help you review this application?" }]);
+        setMessages([{ sender: 'ai', text: "Hello! I'm your Admin Assistant. How can I help you review this application? You can ask me to summarize it, check for red flags, or find specific information." }]);
       }
     }
   }, [isOpen]);
@@ -52,7 +65,12 @@ const AdminChatbot = ({ applicationData }: AdminChatbotProps) => {
             timestamp: new Date().toISOString(),
             version: ADMIN_CHAT_VERSION
         };
-        localStorage.setItem('adminChatHistory', JSON.stringify(historyToSave));
+        try {
+            // Use safeStringify to prevent circular reference crashes
+            localStorage.setItem('adminChatHistory', safeStringify(historyToSave));
+        } catch (e) {
+            console.warn("Failed to save chat history", e);
+        }
     }
   }, [messages]);
 
@@ -84,30 +102,77 @@ const AdminChatbot = ({ applicationData }: AdminChatbotProps) => {
     e.preventDefault();
     if (!userInput.trim() || isLoading) return;
 
-    // Explicitly type newMessages to match ChatMessage[]
     const newMessages: ChatMessage[] = [...messages, { sender: 'user', text: userInput }];
     setMessages(newMessages);
-    const currentUserInput = userInput;
+    const textToSend = userInput;
     setUserInput('');
     setIsLoading(true);
     setPreviousSession(null);
 
     try {
-        const ai = new GoogleGenerativeAI({apiKey: process.env.API_KEY});
-        const applicationJsonString = JSON.stringify(applicationData, null, 2);
-        const systemInstruction = `You are an expert AI assistant for an Xtenda Salary Advance administrator. Your task is to help the admin review and process a loan application. You have been provided with the full application data in JSON format. Use this data as the single source of truth to answer questions, summarize details, check for completeness, and draft communications. Be concise, professional, and accurate. When drafting communications, use placeholders like [Applicant Name]. Do not invent any information not present in the provided data. Here is the application data: ${applicationJsonString}`;
+        if (!process.env.API_KEY) {
+            throw new Error("API_KEY is not configured.");
+        }
+        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+
+        // Create a lean, privacy-focused context object to send to the AI
+        // Using explicit simple types where possible to avoid complex object refs
+        const contextForAI = {
+            dateOfApplication: String(applicationData.dateOfApplication || ''),
+            personalDetails: {
+                employer: String(applicationData.employer || ''),
+                employmentTerms: String(applicationData.employmentTerms || ''),
+            },
+            kinDetails: {
+                kinRelationship: String(applicationData.kinRelationship || ''),
+            },
+            bankDetails: {
+                bankName: String(applicationData.bankName || ''),
+            },
+            loanDetails: applicationData.loanDetails ? {
+                amount: applicationData.loanDetails.amount,
+                months: applicationData.loanDetails.months,
+                monthlyPayment: applicationData.loanDetails.monthlyPayment
+            } : null,
+            loanPurpose: String(applicationData.loanPurpose || ''),
+            sourceOfRepayment: String(applicationData.sourceOfRepayment || ''),
+            otherLoans: String(applicationData.otherLoans || ''),
+            status: String(applicationData.status || ''),
+            rejectionReason: String(applicationData.rejectionReason || ''),
+            submittedAt: String(applicationData.submittedAt || ''),
+        };
+
+        const applicationContext = safeStringify(contextForAI);
+        
+        const prompt = `
+          You are a professional financial analyst AI assistant for loan officers at Xtenda. Your task is to analyze the provided loan application JSON data and answer questions accurately. Be objective, factual, and concise.
+
+          Here are some example tasks you can perform:
+          - "Summarize this application."
+          - "Are there any potential red flags?"
+          - "What is the applicant's employer and loan amount?"
+          - "Calculate the debt-to-income ratio if their monthly salary is X." (Note: You cannot know the salary from the data, you must be told it).
+
+          Based *only* on the data provided, please answer the user's question. If the information is not in the data, state that clearly. Do not ask for more information, just state what is missing.
+
+          Application Data:
+          ${applicationContext}
+
+          User's Question:
+          ${textToSend}
+        `;
         
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
-            contents: currentUserInput,
-            config: { systemInstruction }
+            contents: prompt
         });
 
         const aiText = response.text;
         setMessages(prev => [...prev, { sender: 'ai', text: aiText }]);
+
     } catch (error) {
-        console.error("Error calling Gemini API for Admin Chat:", error);
-        setMessages(prev => [...prev, { sender: 'ai', text: "Sorry, I encountered an error. Please try again." }]);
+        console.error("Error in Admin Chat:", error);
+        setMessages(prev => [...prev, { sender: 'ai', text: "Sorry, I encountered an error. Please check the API key and try again." }]);
     } finally {
         setIsLoading(false);
     }
